@@ -11,7 +11,7 @@ namespace ExaminationApp.Services
     public class BookStoreService
     {
         private BookStoreContext _context;
-        public BookStoreService() 
+        public BookStoreService()
         {
             _context = new BookStoreContext();
         }
@@ -53,8 +53,8 @@ namespace ExaminationApp.Services
         public async Task EditBookAsync(Book book, string title, string author, string publisher, BookGenre genre, int pagesCount, int yearPublished, decimal price)
         {
             book.Title = title;
-            book.Author=author;
-            book.Publisher=publisher;
+            book.Author = author;
+            book.Publisher = publisher;
             book.Genre = genre;
             book.PagesCount = pagesCount;
             book.PublishYear = yearPublished;
@@ -63,7 +63,7 @@ namespace ExaminationApp.Services
             await _context.SaveChangesAsync();
         }
 
-      
+
         // Удалить книгу
         public async Task DeleteBookAsync(int bookId)
         {
@@ -83,15 +83,15 @@ namespace ExaminationApp.Services
             {
                 throw new Exception("Данной книги несуществует");
             }
-            
+
         }
 
         // Отфильтровать книги
         public async Task<List<Book>> FilterBooksAsync(string author, string title, int bookGenre)
         {
-            return  await _context
+            return await _context
                 .Books
-                .Where(a=>a.Author.Contains(author) && a.Title.Contains(title) &&( bookGenre == 0 || a.Genre == (BookGenre)bookGenre ))
+                .Where(a => a.Author.Contains(author) && a.Title.Contains(title) && (bookGenre == 0 || a.Genre == (BookGenre)bookGenre))
                 .ToListAsync();
         }
 
@@ -128,9 +128,11 @@ namespace ExaminationApp.Services
         public async Task<List<BookGenre>> GetTopGenresAsync(int days)
         {
             return await _context.Books
-                .GroupBy(x=>x.Genre)
-                .OrderByDescending(x => x.SelectMany(y=>y.SoldBooks).Sum(z => z.SoldAmount))
-                .
+                .GroupBy(x => x.Genre)
+                .OrderByDescending(x => x.SelectMany(y => y.SoldBooks.Where(x => x.SellingDate >= DateTime.Now.AddDays(-days))).Sum(z => z.SoldAmount))
+                .Take(3)
+                .Select(x => x.Key)
+                .ToListAsync();
         }
     }
 }
