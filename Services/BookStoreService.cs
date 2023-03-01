@@ -4,6 +4,7 @@ using ExaminationApp.Entities;
 using ExaminationApp.Forms;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics.Metrics;
+using System.Security.Cryptography.X509Certificates;
 
 namespace ExaminationApp.Services
 {
@@ -97,19 +98,34 @@ namespace ExaminationApp.Services
         // Взять список новинок. Книги изданные за последние 5 лет
         public async Task<List<Book>> GetNewBooksListAsync()
         {
-            throw new NotImplementedException();
+            return await _context
+                .Books
+                .Where(x => x.PublishYear > DateTime.Now.Year - 5)
+                .ToListAsync();
+
         }
 
         // Взять топ продаж. Первые 3 книги по кол-ву проданных экземпляров
         public async Task<List<Book>> GetTopSalesAsync()
         {
-            throw new NotImplementedException();
+            return await _context.Books
+                .OrderByDescending(x => x.SoldBooks.Sum(s => s.SoldAmount))
+                .Take(3)
+                .ToListAsync();
         }
 
         // Взять топ авторов. Первые 3 автора по продажам их книг
         public async Task<List<string>> GetTopAuthorsAsync()
         {
-            throw new NotImplementedException();
+
+            return await _context.Books
+                .GroupBy(x => x.Author)
+                .OrderByDescending(x => x.SelectMany(y => y.SoldBooks).Sum(z => z.SoldAmount))
+                .Take(3)
+                .Select(x => x.Key)
+                .ToListAsync();
+
+
         }
 
         // Взять топ жанров за сколько-то дней. Первые 3 жанра по продажам их книг
