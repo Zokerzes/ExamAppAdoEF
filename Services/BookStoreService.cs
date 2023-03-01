@@ -100,9 +100,8 @@ namespace ExaminationApp.Services
         {
             return await _context
                 .Books
-                .Where(x => x.PublishYear > DateTime.Now.Year - 5)
+                .Where(x => x.PublishYear >= DateTime.Now.Year - 5)
                 .ToListAsync();
-
         }
 
         // Взять топ продаж. Первые 3 книги по кол-ву проданных экземпляров
@@ -117,21 +116,21 @@ namespace ExaminationApp.Services
         // Взять топ авторов. Первые 3 автора по продажам их книг
         public async Task<List<string>> GetTopAuthorsAsync()
         {
-
             return await _context.Books
                 .GroupBy(x => x.Author)
                 .OrderByDescending(x => x.SelectMany(y => y.SoldBooks).Sum(z => z.SoldAmount))
                 .Take(3)
                 .Select(x => x.Key)
                 .ToListAsync();
-
-
         }
 
         // Взять топ жанров за сколько-то дней. Первые 3 жанра по продажам их книг
         public async Task<List<BookGenre>> GetTopGenresAsync(int days)
         {
-            throw new NotImplementedException();
+            return await _context.Books
+                .GroupBy(x=>x.Genre)
+                .OrderByDescending(x => x.SelectMany(y=>y.SoldBooks).Sum(z => z.SoldAmount))
+                .
         }
     }
 }
